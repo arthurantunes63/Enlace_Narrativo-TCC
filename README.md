@@ -18,10 +18,10 @@
 
 ####  Extrair .csv representando a rede de personagens:
 ```powershell
-$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave"network
+$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave" network
 ```
 
 #### Gerar gráficos da análise de emoções:
 ```powershell
-$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave"network emotionAnalysis
+$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave" emotionAnalysis
 ```
