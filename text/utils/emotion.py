@@ -26,7 +26,12 @@ colors = {
           'surprise': '#6a8ad1', 'anticipation': '#e98121', 'negative': '#000000',
           'positive': '#f0a500'
          }
- 
+
+translateEmotion = {'joy': 'alegria', 'sadness': 'tristeza', 'trust': 'confiança',
+					'disgust': 'nojo/aversão', 'fear': 'medo', 'anger': 'raiva',
+					'surprise': 'surpresa', 'anticipation': 'antecipação', 
+					'negative': 'negativo', 'positive': 'positivo'
+					}
 def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times New Roman",
                                                              "plot": "Times New Roman"},
                    extension = 'pdf', all = False, perChapter = False, barGraph = False):
@@ -37,7 +42,7 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
         n = 0
         while os.path.isfile(file):
             n += 1
-            file = f'{path}/Emotions - {title}({n}).{extension.lower()}'
+            file = f'{path}/{title}({n}).{extension.lower()}'
 
     plt.rcParams['axes.linewidth'] = 1.5
     plt.rcParams["font.family"] = fonts["plot"]
@@ -62,10 +67,10 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     axe = fig.add_subplot(1, 1, 1)
-                plotTitle = 'All Emotions'
+                plotTitle = 'Emoções'
             else:
                 axe = figAxes[row]
-                plotTitle = emotion.capitalize()
+                plotTitle = translateEmotion[emotion].capitalize()
             axe.spines['top'].set_visible(False)
             axe.spines['bottom'].set_visible(True)
             axe.spines['bottom'].set_color('black')
@@ -86,10 +91,10 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
 
             if perChapter and not barGraph:
             	axe.plot(chapterNumber, y[emotion], color = f'{colors[emotion]}90',
-    			         marker = 'o', linewidth = 4, label = emotion.capitalize(),
+    			         marker = 'o', linewidth = 4, label = translateEmotion[emotion].capitalize(),
     			         markerfacecolor = colors[emotion])
             	axe.set_title(plotTitle, fontsize = 50, y = 1.2)
-            	axe.set_xlabel('Chapters', fontsize = 20)
+            	axe.set_xlabel('Capítulos', fontsize = 20)
             	axe.xaxis.set_major_locator(plt.MultipleLocator(1))
             	axe.set_xlim(xmin = 1, xmax = x)
             	if not all:
@@ -103,7 +108,7 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
                 axe.set_xticks(chapterNumber)
                 axe.set_xticklabels(chapterNumber)
                 axe.set_title(plotTitle, fontsize = 50, y = 1.2)
-                axe.set_xlabel('Chapters', fontsize = 20)
+                axe.set_xlabel('Capítulos', fontsize = 20)
             else:
                 axe.bar(x = emotion.capitalize(), height = y[emotion], align = 'center',
                         color = f'{colors[emotion]}90', width = 0.5)
