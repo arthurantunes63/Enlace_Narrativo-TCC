@@ -15,7 +15,7 @@ def main(args):
 		nlp = spacy.load(args.spacyModel, disable = ["ner", "tagger"])
 	else:
 		nlp = spacy.load(args.spacyModel)
-	path = f'./data/books/{args.file}'
+	path = args.file
 	book = Book(args.bookTitle)
 	book.openBook(path = path).sliceBook('#######')
 	bookDoc = BookDoc(book, nlp)
@@ -35,23 +35,20 @@ def main(args):
 		mainNetworkNodeSize = getattr(mainNetwork, args.centralityMeasure)()
 		mainNetwork.vs['Size'] = mainNetworkNodeSize
 
-		path = f'./save/Networks/{book.title}'
-		if not os.path.exists(path):
-		    os.mkdir(path)
-
-		verticesToCsv(mainNetwork, path = path, fileName = f'{book.title} - vertices')
-		edgesToCsv(mainNetwork, path = path, fileName = f'{book.title} - edges')
+		verticesToCsv(mainNetwork, path = args.pathSave, fileName = f'{book.title} - vertices')
+		edgesToCsv(mainNetwork, path = args.pathSave, fileName = f'{book.title} - edges')
 		
 	elif args.command == 'emotionAnalysis':
 		lexiconPath = f'./data/lexicon/{args.lexicon}.txt'
+
 		columns = ['Word', 'Emotion', 'Value']
 		lexicon = pd.read_csv(lexiconPath, delim_whitespace = True, header = None, names = columns)
 		y = bookDoc.analysisEmotion(lexicon, emotionPerChapter = args.perChapter)
 
 		emotions = ['joy', 'trust', 'disgust', 'fear', 'anger', 'surprise', 'anticipation', 'sadness']
-		path = './save/Emotion Analysis'
+
 		maxAxisX = book.chapterTotal
-		emotionGraphic(book.title, path, emotions, y, maxAxisX,
+		emotionGraphic(book.title, args.pathSave, emotions, y, maxAxisX,
 					   all = args.all, barGraph = args.bar,
 					   extension = args.ext, perChapter = args.perChapter)
 
@@ -62,10 +59,14 @@ if __name__ == '__main__':
 									 			  		Arthur Antunes and Maria Edwarda.')
 
 	parser.add_argument('-bt', '--bookTitle', type = str, help = 'The book Title.', required = True)
-	parser.add_argument('-f', '--file', type = str, help = 'The book .txt file name.',
+	parser.add_argument('-f', '--file', type = str, help = 'The book .txt path.',
 						required = True)
 	parser.add_argument('-sm', '--spacyModel', help = 'The english model of the library spaCy.',
 						type = str, default = "en_core_web_lg")
+
+	parser.add_argument('-ps', '--pathSave', help = 'Path to save the files.',
+						type = str, required = True)
+
 
 	subparsers = parser.add_subparsers(title = 'subcommands', description = "Commands for generate\
 									    								 	 information extracted\
