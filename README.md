@@ -14,17 +14,14 @@
 <p align = 'right'> Arthur Antunes </br> Maria Edwarda </p></br>
 <p align = 'right'> Darlon Vasata </br> Poliana Sella </p></br>
 
-A inserção do livro .txt ocorre no diretório **`.\data\books`**.</br>
-O resultado do processo escolhido armazena-se em **`.\save`**.
-
 ### Execução do script .py na raiz do projeto
 
 ####  Extrair .csv representando a rede de personagens:
 ```powershell
-$ python main.py -bt "Title" -f "fileName.txt" network
+$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave"network
 ```
 
 #### Gerar gráficos da análise de emoções:
 ```powershell
-$ python main.py -bt "Title" -f "fileName.txt" emotionAnalysis
+$ python main.py -bt "Title" -f "path/fileName.txt" -ps "pathToSave"network emotionAnalysis
 ```
