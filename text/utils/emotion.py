@@ -32,6 +32,7 @@ translateEmotion = {'joy': 'alegria', 'sadness': 'tristeza', 'trust': 'confianç
 					'surprise': 'surpresa', 'anticipation': 'antecipação', 
 					'negative': 'negativo', 'positive': 'positivo'
 					}
+
 def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times New Roman",
                                                              "plot": "Times New Roman"},
                    extension = 'pdf', all = False, perChapter = False, barGraph = False):
@@ -42,7 +43,7 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
         n = 0
         while os.path.isfile(file):
             n += 1
-            file = f'{path}/{title}({n}).{extension.lower()}'
+            file = f'{path}/Emotions - {title} ({n}).{extension.lower()}'
 
     plt.rcParams['axes.linewidth'] = 1.5
     plt.rcParams["font.family"] = fonts["plot"]
@@ -80,8 +81,8 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
             axe.get_xaxis().tick_bottom()
             axe.get_yaxis().tick_left()
             axe.grid(False)
-            axe.yaxis.grid(True, 'major', ls = '--', lw = .5, c = 'k', alpha = .4)
-            axe.tick_params(axis = 'both', which = 'both', labelsize = 20,
+            axe.yaxis.grid(True, 'major', ls = '--', lw = .7, c = 'k', alpha = .4)
+            axe.tick_params(axis = 'both', which = 'both', labelsize = 35,
                             bottom = False, top = False, labelbottom = True,
                             left = False, right = False, labelleft = True,
                             pad = 20)
@@ -91,24 +92,24 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
 
             if perChapter and not barGraph:
             	axe.plot(chapterNumber, y[emotion], color = f'{colors[emotion]}90',
-    			         marker = 'o', linewidth = 4, label = translateEmotion[emotion].capitalize(),
+    			         marker = 'o', linewidth = 4.5, label = translateEmotion[emotion].capitalize(),
     			         markerfacecolor = colors[emotion])
             	axe.set_title(plotTitle, fontsize = 50, y = 1.2)
-            	axe.set_xlabel('Capítulos', fontsize = 20)
+            	axe.set_xlabel('Capítulos', fontsize = 30)
             	axe.xaxis.set_major_locator(plt.MultipleLocator(1))
             	axe.set_xlim(xmin = 1, xmax = x)
             	if not all:
             		axe.set_ylim(ymin = 0, ymax = max(y[emotion])+1)
             	else:
             		axe.legend(bbox_to_anchor = (1.02, 1), loc = 'upper left',
-                               borderaxespad = 1)
+                               borderaxespad = 1,  fontsize = 30)
             elif perChapter and barGraph:
                 axe.bar(x = chapterNumber, height = y[emotion], align = 'center',
                         color = f'{colors[emotion]}90', width = 0.5)
                 axe.set_xticks(chapterNumber)
                 axe.set_xticklabels(chapterNumber)
                 axe.set_title(plotTitle, fontsize = 50, y = 1.2)
-                axe.set_xlabel('Capítulos', fontsize = 20)
+                axe.set_xlabel('Capítulos', fontsize = 30)
             else:
                 axe.bar(x = emotion.capitalize(), height = y[emotion], align = 'center',
                         color = f'{colors[emotion]}90', width = 0.5)
