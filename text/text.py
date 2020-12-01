@@ -73,8 +73,8 @@ class Book:
             
     def removeAccents(self):
         '''Removes accents from the book content string.'''
-        noAccent = unicodedata.normalize('NFKD',self._content)\
-                   .encode('utf8', 'ignore').decode('utf8')
+        noAccent = unicodedata.normalize('NFKD', self._content)\
+                   .encode('utf-8', 'ignore').decode('utf-8')
         self._content = noAccent
         return self
 

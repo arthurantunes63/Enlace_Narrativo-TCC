@@ -21,13 +21,14 @@ pairs = {
         }
 
 colors = {
-          'joy': '#ffbf00', 'sadness': '#4682b4', 'trust': '#75ff2b',
-          'disgust': '#d62173', 'fear': '#5cb270', 'anger': '#f1515e',
-          'surprise': '#6a8ad1', 'anticipation': '#e98121', 'negative': '#000000',
+          'joy': '#ffbf00', 'sadness': '#00008B', 'trust': '#75ff2b',
+          'disgust': '#d62173', 'fear': '#5cb270', 'anger': '#cc0000',
+          'surprise': '#00BFFF', 'anticipation': '#e98121', 'negative': '#000000',
           'positive': '#f0a500'
          }
 
-translateEmotion = {'joy': 'alegria', 'sadness': 'tristeza', 'trust': 'confiança',
+translateEmotion = {
+                    'joy': 'alegria', 'sadness': 'tristeza', 'trust': 'confiança',
 					'disgust': 'nojo/aversão', 'fear': 'medo', 'anger': 'raiva',
 					'surprise': 'surpresa', 'anticipation': 'antecipação', 
 					'negative': 'negativo', 'positive': 'positivo'
@@ -114,8 +115,3 @@ def emotionGraphic(title, path, emotions, y, x = 0, fonts = {"supTitle": "Times 
                 axe.bar(x = emotion.capitalize(), height = y[emotion], align = 'center',
                         color = f'{colors[emotion]}90', width = 0.5)
     fig.savefig(file, bbox_inches = "tight", pad_inches = 3, dpi = 400)
-
-def setPlotFont(path, fontName):
-    '''Adds a new font family for matplotlib.'''
-    mpl.font_manager.fontManager.addfont(path)
-    mpl.rc('font', family = fontName)

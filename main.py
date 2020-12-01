@@ -12,28 +12,30 @@ from text.utils.emotion import emotionGraphic
 
 def main(args):
 	if args.command == 'emotionAnalysis':
-		nlp = spacy.load(args.spacyModel, disable = ["ner", "tagger"])
+		nlp = spacy.load(args.spacyModel, disable = ["ner"])
 	else:
 		nlp = spacy.load(args.spacyModel)
 	path = args.file
 	book = Book(args.bookTitle)
-	book.openBook(path = path).sliceBook('#######')
+	book.openBook(path = path).lowercaseBook().sliceBook('#######')
 	bookDoc = BookDoc(book, nlp)
 
 	if args.command == 'network':
 		book.characters = bookDoc.extractCharacters()
+
 		links, strength = bookDoc.buildNetwork()
 		network = Graph(n = len(book.characters), edges = links, directed = False,
 		                vertex_attrs = {'Name':book.characters},
 		                edge_attrs = {'Weight':strength})
 		mainNetwork = network.components().giant()
 
-		mainNetworkCommunities = getattr(mainNetwork, args.communityAlg)()
+		mainNetworkCommunities = getattr(mainNetwork, args.communityAlg)(weights = mainNetwork.es['Weight'])
+
+		mainNetworkNodeSize = getattr(mainNetwork, args.centralityMeasure)(directed = False)
+		mainNetwork.vs['Size'] = mainNetworkNodeSize
+
 		communityMembers = mainNetworkCommunities.as_clustering().membership
 		mainNetwork.vs['Community'] = communityMembers
-
-		mainNetworkNodeSize = getattr(mainNetwork, args.centralityMeasure)()
-		mainNetwork.vs['Size'] = mainNetworkNodeSize
 
 		verticesToCsv(mainNetwork, path = args.pathSave, fileName = f'{book.title} - vertices')
 		edgesToCsv(mainNetwork, path = args.pathSave, fileName = f'{book.title} - edges')
@@ -45,10 +47,8 @@ def main(args):
 		lexicon = pd.read_csv(lexiconPath, delim_whitespace = True, header = None, names = columns)
 		y = bookDoc.analysisEmotion(lexicon, emotionPerChapter = args.perChapter)
 
-		emotions = ['joy', 'trust', 'disgust', 'fear', 'anger', 'surprise', 'anticipation', 'sadness']
-
 		maxAxisX = book.chapterTotal
-		emotionGraphic(book.title, args.pathSave, emotions, y, maxAxisX,
+		emotionGraphic(book.title, args.pathSave, args.showEmotion, y, maxAxisX,
 					   all = args.all, barGraph = args.bar,
 					   extension = args.ext, perChapter = args.perChapter)
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 	networkParser.add_argument('-cm', '--centralityMeasure', help = 'The centrality measure.',
 							   choices = ["betweenness", "page_rank"], default = "betweenness")
 	networkParser.add_argument('-ca', '--communityAlg', help = 'The community detection algorithm.',
-							   choices = ["community_walktrap"],
+							   choices = ["community_walktrap", "community_edge_betweenness"],
 							   default = "community_walktrap")
 	networkParser.set_defaults(command = "network")
 
@@ -94,6 +94,14 @@ if __name__ == '__main__':
 							   action = 'store_true', default = False)
 	emotionParser.add_argument('-ext', help = 'Extension of the generated graph.',
 						 	   type = str, choices = ['png', 'pdf'], default = 'png')
+	emotionParser.add_argument('-se', '--showEmotion', help = 'Set list of emotions in the final graphic',
+							   choices = ['joy', 'trust', 'disgust', 'fear', 'anger',
+							   			  'surprise', 'anticipation', 'sadness',
+							   			  'positive', 'negative'],
+							   default = ['joy', 'trust', 'disgust', 'fear',
+							   			  'anger', 'surprise', 'anticipation',
+							   			  'sadness'], nargs = '+')
+
 	emotionParser.set_defaults(command = "emotionAnalysis")
 
 	# Executes the program with the arguments from command line.

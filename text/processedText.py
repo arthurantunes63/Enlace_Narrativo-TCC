@@ -1,9 +1,10 @@
 import time
 import re
+import string
 
+import pandas as pd
 from text.utils.emotion import adverbs as advList
 from text.utils.emotion import pairs
-
 
 class BookDoc:
     '''
@@ -67,19 +68,24 @@ class BookDoc:
         '''
         names = []
         surnames = []
+
         for chapter in self._doc:
             i = 0
             while i < len(chapter):
                 if chapter[i].tag_ == 'NNP' and chapter[i].ent_type_ == 'PERSON'\
-                   and chapter[i].ent_iob_ == 'B':
+                   and chapter[i].ent_iob_ == 'B' and chapter[i].text == chapter[i].lemma_\
+                   and not chapter[i].is_stop and not chapter[i].like_num and chapter[i-1].tag_ != 'PRP$'\
+                   and not self._filterSpecialCharac(chapter[i].lower_):
+                    if chapter[i+1].ent_type_ != 'PERSON' and chapter[i-1].ent_type_ != 'PERSON'\
+                        and chapter[i].lower_ not in names:
+                        names.append(chapter[i].lower_)
                     if chapter[i+1].tag_ == 'NNP' and chapter[i+1].ent_type_ == 'PERSON'\
-                        and chapter[i+1].ent_iob_ == 'I':
-                        if chapter[i+1].lower_ not in names:
+                        and chapter[i+1].ent_iob_ == 'I' and chapter[i+1].text == chapter[i+1].lemma_\
+                        and not chapter[i+1].is_stop and not chapter[i+1].like_num\
+                        and chapter[i+1].lower_ not in names and not self._filterSpecialCharac(chapter[i+1].lower_):
                             surnames.append(f'{chapter[i].lower_} {chapter[i+1].lower_}')
                             i += 1
-                    if chapter[i+1].ent_type_ != 'PERSON' and chapter[i-1].ent_type_ != 'PERSON'\
-                        and chapter[i].lower_ not in names and chapter[i-1].tag_ != 'PRP$':
-                        names.append(chapter[i].lower_)
+
                 i += 1
 
         # Validation
@@ -90,7 +96,7 @@ class BookDoc:
                 for name in names:
                     if name.find(parts[1]) != -1:
                         charactersOut.append(name)
-    
+
         for word in names:
             if word[-1:] == 's' and word[-2:] != 'es'\
                and word[:len(word)-1] in names:
@@ -100,16 +106,16 @@ class BookDoc:
                  and word[:len(word)-2] in names:
                 charactersOut.append(word[:len(word)-2])
                 charactersOut.append(word)
-        
-        extracts = [self._extractAmbiguousEnts(label = 'PERSON'), self._extractPersonGroup(),
-                    self._extractPseudoProperNoun(), self._extractInitials(names)]
-        
+
+        extracts = [self._extractAmbiguousEnts(label = 'PERSON'), self._extractPersonGroup(), self._extractPseudoProperNoun(), self._extractInitials(names)]
+
         for extract in extracts:
             for info in extract:
                 if info in names:
                     charactersOut.append(info)
-
+    
         clearNames = [name for name in names if name not in charactersOut]
+
         return clearNames
 
     def _extractPersonGroup(self):
@@ -117,7 +123,11 @@ class BookDoc:
         group = []
         for chapter in self._doc:
             for word in chapter:
-                if word.i < len(chapter)-2: 
+                if word.i < len(chapter)-3: 
+                    if word.lower_ == 'the' and chapter[word.i+1].tag_ == 'NNP'\
+                    and chapter[word.i+2].tag_ == 'NNP' and chapter[word.i+1].ent_type_ == 'PERSON'\
+                    and chapter[word.i+2].ent_type_ == 'PERSON':
+                        group.append(chapter[word.i+1].lower_)
                     if word.tag_ == 'NNP' and chapter[word.i+1].lower_ == 'the':
                         group.append(chapter[word.i+2].lower_)
                     if word.tag_ == 'NNP' and chapter[word.i+1].text == ','\
@@ -259,9 +269,12 @@ class BookDoc:
                     advStrength = 1
         return neg, advStrength
 
-    def analysisEmotion(self, lexicon, emotionPerChapter = True,
-                        locEmotion = ['joy', 'trust', 'disgust', 'fear', 'anger',
-                                      'surprise', 'anticipation', 'sadness']):
+    def filterDataFrame(self, dataframe, array, column):
+        return dataframe.loc[dataframe[column].isin(array)]
+
+    def analysisEmotion(self, lexicon, locEmotion = ['joy', 'trust', 'disgust', 'fear', 'anger',
+                                                     'surprise', 'anticipation', 'sadness'],
+                        emotionPerChapter = True):
         '''
         Analysis the emotions of the book based on a emotion lexicon.
 
@@ -270,13 +283,14 @@ class BookDoc:
             emotionPerChapter (bool): Sets if the analysis will be separated into chapters.
             locEmotion (list): The set of emotions that will be considered in the analysis.
         '''
-        lexiconWords = lexicon['Word'].unique()
+        lexiconWords = self.filterDataFrame(lexicon, locEmotion, 'Emotion')['Word'].unique()
+
         if emotionPerChapter:
             emotions = []
         else:
             wordc = 0
             avgEmotion = {}    
-        for chapter in self._doc:
+        for count, chapter in enumerate(self._doc):
             if emotionPerChapter:
                 wordc = 0
                 avgEmotion = {}
@@ -288,14 +302,13 @@ class BookDoc:
                                 & (lexicon['Value'] > 0)
                     hasEmotion = lexicon.loc[affect]
                     options = {"compact": True, "bg": "#09a3d5",
-                        "color": "white", "font": "Source Sans Pro"}
+                               "color": "white", "font": "Source Sans Pro"}
                     for idx, row in hasEmotion.iterrows():
                         if row['Emotion'] in locEmotion:
                             if row['Emotion'] in avgEmotion:
-                                if neg and pairs[row['Emotion']] in avgEmotion:
-                                    avgEmotion[pairs[row['Emotion']]] += 1 * advStrength
-                                elif neg and pairs[row['Emotion']] not in avgEmotion:
-                                    avgEmotion[pairs[row['Emotion']]] = 1 * advStrength
+                                if neg:
+                                    if pairs[row['Emotion']] in avgEmotion:
+                                        avgEmotion[pairs[row['Emotion']]] += 1 * advStrength
                                 else:
                                     avgEmotion[row['Emotion']] += 1 * advStrength
                             elif neg:
@@ -323,14 +336,8 @@ class BookDoc:
 
             return emotions
 
-    def _countCharacterOccur(self):
-        '''Returns the occurrence of the characters in the book.'''
-        countCharacter = {}
-        for chapter in self._doc:
-            for word in chapter:
-                if word.lower_ in self._book._characters:
-                    if word.lower_ in countCharacter:
-                        countCharacter[word.lower_] += 1
-                    else:
-                        countCharacter[word.lower_] = 1
-        return countCharacter
+    def _filterSpecialCharac(self, word):
+        for letter in word:
+            if letter in string.punctuation:
+                return True
+        return False
