@@ -11,8 +11,8 @@
 <p align = 'right'>
     <a href="https://cascavel.ifpr.edu.br/"><img src="https://img.shields.io/badge/IFPR -- Campus Cascavel-TCC-green?style=for-the-badge"></a>
 </p>
-<p align = 'right'> Arthur Antunes </br> Maria Edwarda </p></br>
-<p align = 'right'> Darlon Vasata </br> Poliana Sella </p></br>
+<p align = 'right'> Arthur Antunes <br/> Maria Edwarda </p><br/>
+<p align = 'right'> Darlon Vasata <br/> Poliana Sella </p><br/>
 
 ### Execução do script .py na raiz do projeto
 
